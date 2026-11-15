@@ -402,6 +402,15 @@ ShellRoot {
     // Shared wallpaper state
     property var wallpapers: []
     property string currentWallpaper: ""
+    readonly property string currentWallpaperBackdrop: {
+        const cur = appRoot.currentWallpaper;
+        if (!cur)
+            return "";
+        const found = appRoot.wallpapers.find(w => w.path === cur);
+        if (found && found.is_live)
+            return found.thumb || "";
+        return cur;
+    }
     property string selectedTransition: "random"
 
     // Shared Hyprland rice & theme/font/padding config state
@@ -1334,7 +1343,7 @@ ShellRoot {
                 // Animated Wallpaper Backdrop
                 Image {
                     anchors.fill: parent
-                    source: appRoot.currentWallpaper !== "" ? ("file://" + appRoot.currentWallpaper) : ""
+                    source: appRoot.currentWallpaperBackdrop !== "" ? ("file://" + appRoot.currentWallpaperBackdrop) : ""
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                     scale: lockRoot.visiblePhase ? 1.0 : 1.08
@@ -5274,7 +5283,7 @@ ShellRoot {
                     anchors.bottom: bottomFrameStrip.top
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: win.bottomDrawerMode === "wallpaper"
-                        ? Math.min(appRoot.sc(820), win.innerW - 60)
+                        ? Math.min(appRoot.sc(980), win.innerW - 48)
                         : (win.bottomDrawerMode === "search"
                             ? Math.min(appRoot.sc(540), win.innerW - 60)
                             : (win.bottomDrawerMode === "music_player"
@@ -5283,7 +5292,7 @@ ShellRoot {
                     height: win.bottomDrawerMode === "search"
                         ? Math.min(appRoot.sc(390), Math.max(appRoot.sc(150), appRoot.sc(88) + searchBody.filteredApps.length * appRoot.sc(52)))
                         : (win.bottomDrawerMode === "wallpaper"
-                            ? Math.min(appRoot.sc(340), Math.max(appRoot.sc(190), appRoot.sc(74) + Math.ceil(bottomDockContent.filteredWalls.length / 4) * appRoot.sc(118)))
+                            ? Math.min(Math.round(win.innerH * 0.62), Math.min(appRoot.sc(560), Math.max(appRoot.sc(220), appRoot.sc(78) + Math.ceil(bottomDockContent.filteredWalls.length / 4) * appRoot.sc(126))))
                             : (win.bottomDrawerMode === "music_player"
                                 ? appRoot.sc(132)
                                 : (win.bottomDrawerMode === "cava" ? appRoot.sc(28) : 0)))
@@ -5736,11 +5745,45 @@ ShellRoot {
 
                                         Image {
                                             anchors.fill: parent
-                                            source: "file://" + wallTileCard.modelData.thumb
+                                            source: wallTileCard.modelData.thumb !== "" ? ("file://" + wallTileCard.modelData.thumb) : ""
                                             fillMode: Image.PreserveAspectCrop
                                             asynchronous: true
                                             sourceSize.width: 320
                                             sourceSize.height: 180
+                                        }
+
+                                        Rectangle {
+                                            visible: !!wallTileCard.modelData.is_live
+                                            anchors.top: parent.top
+                                            anchors.left: parent.left
+                                            anchors.margins: appRoot.sc(5)
+                                            width: liveBadgeRow.implicitWidth + appRoot.sc(8)
+                                            height: appRoot.sc(16)
+                                            radius: Math.round(height / 2)
+                                            color: Qt.rgba(appRoot.colBg.r, appRoot.colBg.g, appRoot.colBg.b, 0.85)
+                                            border.width: 1
+                                            border.color: appRoot.colAccent
+
+                                            Row {
+                                                id: liveBadgeRow
+                                                anchors.centerIn: parent
+                                                spacing: 3
+                                                Text {
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    text: "󰕧"
+                                                    font.family: appRoot.iconFont
+                                                    font.pixelSize: appRoot.fs(-3)
+                                                    color: appRoot.colAccent
+                                                }
+                                                Text {
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    text: "LIVE"
+                                                    font.family: appRoot.fontFamily
+                                                    font.pixelSize: Math.max(8, appRoot.fs(-4))
+                                                    font.bold: true
+                                                    color: appRoot.colFg
+                                                }
+                                            }
                                         }
 
                                         Rectangle {
