@@ -1291,6 +1291,11 @@ ShellRoot {
             id: lockSurface
             color: "transparent"
 
+            IdleInhibitor {
+                enabled: appRoot.lockActive
+                window: lockSurface
+            }
+
             Item {
                 id: lockRoot
                 anchors.fill: parent
@@ -2375,7 +2380,7 @@ ShellRoot {
             }
 
             IdleInhibitor {
-                enabled: appRoot.coffeeActive
+                enabled: appRoot.coffeeActive || appRoot.lockActive
                 window: win
             }
 
