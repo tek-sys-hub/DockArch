@@ -1,4 +1,4 @@
-# MinimalArch (Quickshell + Hyprland)
+# DockArch (Quickshell + Hyprland)
 
 Minimal full-screen **4-border connected frame shell** built with **Quickshell (`qs`)** on top of your existing Hyprland setup — preserving all keybinds (`~/.config/hypr/config/bind.lua`), terminal settings (`foot`), and SDDM configuration.
 
@@ -34,10 +34,10 @@ Minimal full-screen **4-border connected frame shell** built with **Quickshell (
 ## Usage
 
 ```bash
-# Enable MinimalArch Quickshell rice
+# Enable DockArch Quickshell rice
 /home/cherry/main/minimalarch/switch.sh --enable
 
-# Reload MinimalArch Quickshell bar cleanly
+# Reload DockArch Quickshell bar cleanly
 /home/cherry/main/minimalarch/switch.sh --reload
 
 # Restore previous MetaArch Quickshell + WallEclipse setup
