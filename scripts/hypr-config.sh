@@ -257,6 +257,20 @@ def compute_palette(data):
         scheme = "scheme-tonal-spot"
 
     try:
+        tone = "dark"
+        try:
+            luma_out = subprocess.run(
+                ["magick", img, "-resize", "32x32!", "-colorspace", "Gray", "-format", "%[fx:mean]", "info:"],
+                capture_output=True,
+                text=True,
+                timeout=2,
+            )
+            if luma_out.returncode == 0 and luma_out.stdout.strip():
+                if float(luma_out.stdout.strip()) > 0.56:
+                    tone = "light"
+        except Exception:
+            pass
+
         res = subprocess.run(
             ["matugen", "image", img, "--source-color-index", "0", "-t", scheme, "-j", "hex", "--dry-run"],
             capture_output=True,
@@ -268,12 +282,27 @@ def compute_palette(data):
             colors = payload.get("colors", {})
             def get_c(key, fb):
                 entry = colors.get(key, {})
-                dark = entry.get("dark", {}) if isinstance(entry, dict) else {}
-                return valid_hex(dark.get("color", ""), fb)
+                bucket = entry.get(tone, {}) if isinstance(entry, dict) else {}
+                return valid_hex(bucket.get("color", ""), fb)
 
-            data["col_bg"] = get_c("surface_container_lowest", get_c("background", data["col_bg"]))
-            data["col_surface"] = get_c("surface_container", data["col_surface"])
-            data["col_surface_high"] = get_c("surface_container_high", data["col_surface_high"])
+            def mix_hex(c1, c2, t):
+                r1, g1, b1 = int(c1[1:3], 16), int(c1[3:5], 16), int(c1[5:7], 16)
+                r2, g2, b2 = int(c2[1:3], 16), int(c2[3:5], 16), int(c2[5:7], 16)
+                r = max(0, min(255, round(r1 + (r2 - r1) * t)))
+                g = max(0, min(255, round(g1 + (g2 - g1) * t)))
+                b = max(0, min(255, round(b1 + (b2 - b1) * t)))
+                return f"#{r:02x}{g:02x}{b:02x}"
+
+            surf_c = get_c("surface_container", data["col_surface"])
+            surf_hi = get_c("surface_container_high", data["col_surface_high"])
+            surf_hi2 = get_c("surface_container_highest", surf_hi)
+            prim_c = get_c("primary_container", surf_c)
+            sec_c = get_c("secondary_container", surf_hi)
+
+            bg_mix = 0.30 if tone == "light" else 0.45
+            data["col_bg"] = mix_hex(surf_c, prim_c, bg_mix)
+            data["col_surface"] = mix_hex(surf_hi, sec_c, 0.32)
+            data["col_surface_high"] = mix_hex(surf_hi2, sec_c, 0.38)
             data["col_fg"] = get_c("on_surface", data["col_fg"])
             data["col_dim"] = get_c("on_surface_variant", data["col_dim"])
             data["col_muted"] = get_c("outline", data["col_muted"])
