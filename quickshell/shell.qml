@@ -68,8 +68,12 @@ ShellRoot {
     }
 
     // Dynamic wallpaper-extracted / curated editorial palette tokens
+    property string previewDockColor: ""
+    readonly property string dockColorCfg: String(hyprConfig.dock_color || "auto")
+    readonly property string effectiveDockHex: previewDockColor !== "" ? previewDockColor : dockColorCfg
     readonly property color rawBg: hyprConfig.col_bg || "#111316"
-    property color colFrame: Qt.rgba(rawBg.r, rawBg.g, rawBg.b, frameOpacityFrac)
+    readonly property color rawDockBg: (effectiveDockHex !== "auto" && /^#[0-9a-fA-F]{6}$/.test(effectiveDockHex)) ? effectiveDockHex : rawBg
+    property color colFrame: Qt.rgba(rawDockBg.r, rawDockBg.g, rawDockBg.b, frameOpacityFrac)
     property color colBg: Qt.rgba(rawBg.r, rawBg.g, rawBg.b, Math.min(1.0, frameOpacityFrac + 0.02))
     property color colSurface: hyprConfig.col_surface || "#1a1d21"
     property color colSurfaceHover: hyprConfig.col_surface_high || "#25292e"
@@ -441,6 +445,7 @@ ShellRoot {
         left_dock_width: 330,
         right_dock_width: 356,
         frame_opacity: 96,
+        dock_color: "auto",
         border_line_width: 1,
         border_glow: 42,
         border_opacity: 16,
@@ -4357,10 +4362,14 @@ ShellRoot {
                                             Repeater {
                                                 model: [
                                                     { id: "wallpaper", label: "Wallpaper" },
+                                                    { id: "black", label: "Black" },
+                                                    { id: "white", label: "White" },
                                                     { id: "mono", label: "Mono" },
                                                     { id: "espresso", label: "Espresso" },
                                                     { id: "forest", label: "Forest" },
                                                     { id: "nord", label: "Nord" },
+                                                    { id: "ocean", label: "Ocean" },
+                                                    { id: "violet", label: "Violet" },
                                                     { id: "crimson", label: "Crimson" }
                                                 ]
                                                 delegate: Rectangle {
@@ -4623,6 +4632,330 @@ ShellRoot {
                                             value: appRoot.rightDockWidthCfg
                                             onMovedValue: val => appRoot.setHyprValue("right_dock_width", Math.round(val))
                                             onStepBy: delta => appRoot.setHyprValue("right_dock_width", Math.max(300, Math.min(480, appRoot.rightDockWidthCfg + delta)))
+                                        }
+
+                                        ColumnLayout {
+                                            id: dockColorPickerBox
+                                            Layout.fillWidth: true
+                                            spacing: appRoot.sc(7)
+
+                                            property real pickerH: 0.6
+                                            property real pickerS: 0.35
+                                            property real pickerV: 0.12
+
+                                            function hsvToHex(h, s, v) {
+                                                const i = Math.floor(h * 6);
+                                                const f = h * 6 - i;
+                                                const p = v * (1 - s);
+                                                const q = v * (1 - f * s);
+                                                const t = v * (1 - (1 - f) * s);
+                                                let r = 0, g = 0, b = 0;
+                                                switch (i % 6) {
+                                                    case 0: r = v; g = t; b = p; break;
+                                                    case 1: r = q; g = v; b = p; break;
+                                                    case 2: r = p; g = v; b = t; break;
+                                                    case 3: r = p; g = q; b = v; break;
+                                                    case 4: r = t; g = p; b = v; break;
+                                                    case 5: r = v; g = p; b = q; break;
+                                                }
+                                                const toHex = x => ("0" + Math.max(0, Math.min(255, Math.round(x * 255))).toString(16)).slice(-2);
+                                                return "#" + toHex(r) + toHex(g) + toHex(b);
+                                            }
+
+                                            function syncFromHex(hex) {
+                                                if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+                                                const r = parseInt(hex.slice(1, 3), 16) / 255;
+                                                const g = parseInt(hex.slice(3, 5), 16) / 255;
+                                                const b = parseInt(hex.slice(5, 7), 16) / 255;
+                                                const max = Math.max(r, g, b), min = Math.min(r, g, b);
+                                                const d = max - min;
+                                                let h = 0;
+                                                if (d !== 0) {
+                                                    if (max === r) h = ((g - b) / d) % 6;
+                                                    else if (max === g) h = (b - r) / d + 2;
+                                                    else h = (r - g) / d + 4;
+                                                    h /= 6;
+                                                    if (h < 0) h += 1;
+                                                }
+                                                pickerH = h;
+                                                pickerS = max === 0 ? 0 : d / max;
+                                                pickerV = max;
+                                            }
+
+                                            function applyDockHex(hex, commit) {
+                                                appRoot.previewDockColor = hex;
+                                                if (dockHexInput.text !== hex)
+                                                    dockHexInput.text = hex;
+                                                if (commit) {
+                                                    appRoot.setHyprValue("dock_color", hex);
+                                                    appRoot.previewDockColor = "";
+                                                }
+                                            }
+
+                                            Component.onCompleted: {
+                                                if (/^#[0-9a-fA-F]{6}$/.test(appRoot.dockColorCfg))
+                                                    syncFromHex(appRoot.dockColorCfg);
+                                            }
+
+                                            RowLayout {
+                                                Layout.fillWidth: true
+                                                Text { text: "DOCK COLOR"; font.family: appRoot.fontFamily; font.pixelSize: appRoot.fs(-1); font.bold: true; color: appRoot.colDim }
+                                                Item { Layout.fillWidth: true }
+                                                Text {
+                                                    text: appRoot.effectiveDockHex === "auto" ? "auto" : appRoot.effectiveDockHex.toUpperCase()
+                                                    font.family: appRoot.fontFamily
+                                                    font.pixelSize: appRoot.fs(-2)
+                                                    color: appRoot.colAccent
+                                                }
+                                            }
+
+                                            Rectangle {
+                                                readonly property bool sel: appRoot.effectiveDockHex === "auto"
+                                                Layout.fillWidth: true
+                                                height: appRoot.sc(28)
+                                                radius: appRoot.sc(8)
+                                                color: sel ? Qt.rgba(appRoot.colAccent.r, appRoot.colAccent.g, appRoot.colAccent.b, 0.14) : appRoot.colSurface
+                                                border.width: sel ? 1 : 0
+                                                border.color: appRoot.colAccent
+
+                                                Row {
+                                                    anchors.centerIn: parent
+                                                    spacing: 6
+                                                    Rectangle {
+                                                        anchors.verticalCenter: parent.verticalCenter
+                                                        width: appRoot.sc(10)
+                                                        height: appRoot.sc(10)
+                                                        radius: Math.round(width / 2)
+                                                        color: appRoot.rawBg
+                                                        border.width: 1
+                                                        border.color: appRoot.colLineStrong
+                                                    }
+                                                    Text {
+                                                        anchors.verticalCenter: parent.verticalCenter
+                                                        text: "Auto (Wallpaper / Theme)"
+                                                        font.family: appRoot.fontFamily
+                                                        font.pixelSize: appRoot.fs(-1)
+                                                        font.bold: parent.parent.sel
+                                                        color: parent.parent.sel ? appRoot.colAccent : (autoDockColMouse.containsMouse ? appRoot.colFg : appRoot.colDim)
+                                                    }
+                                                }
+                                                MouseArea {
+                                                    id: autoDockColMouse
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: {
+                                                        appRoot.previewDockColor = "";
+                                                        dockHexInput.text = "";
+                                                        appRoot.setHyprValue("dock_color", "auto");
+                                                    }
+                                                }
+                                            }
+
+                                            // 2D Saturation / Brightness Color Picker
+                                            Rectangle {
+                                                id: svPickerRect
+                                                Layout.fillWidth: true
+                                                height: appRoot.sc(92)
+                                                radius: appRoot.sc(8)
+                                                clip: true
+                                                color: Qt.hsla(dockColorPickerBox.pickerH, 1.0, 0.5, 1.0)
+                                                border.width: 1
+                                                border.color: appRoot.colLineStrong
+
+                                                Rectangle {
+                                                    anchors.fill: parent
+                                                    gradient: Gradient {
+                                                        orientation: Gradient.Horizontal
+                                                        GradientStop { position: 0.0; color: "#ffffff" }
+                                                        GradientStop { position: 1.0; color: "#00ffffff" }
+                                                    }
+                                                }
+                                                Rectangle {
+                                                    anchors.fill: parent
+                                                    gradient: Gradient {
+                                                        orientation: Gradient.Vertical
+                                                        GradientStop { position: 0.0; color: "#00000000" }
+                                                        GradientStop { position: 1.0; color: "#ff000000" }
+                                                    }
+                                                }
+
+                                                Rectangle {
+                                                    width: appRoot.sc(12)
+                                                    height: appRoot.sc(12)
+                                                    radius: Math.round(width / 2)
+                                                    x: Math.max(0, Math.min(svPickerRect.width - width, dockColorPickerBox.pickerS * svPickerRect.width - width / 2))
+                                                    y: Math.max(0, Math.min(svPickerRect.height - height, (1.0 - dockColorPickerBox.pickerV) * svPickerRect.height - height / 2))
+                                                    color: "transparent"
+                                                    border.width: 2
+                                                    border.color: dockColorPickerBox.pickerV > 0.55 ? "#111316" : "#ffffff"
+                                                }
+
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.CrossCursor
+                                                    function pickSV(mx, my, commit) {
+                                                        dockColorPickerBox.pickerS = Math.max(0.0, Math.min(1.0, mx / width));
+                                                        dockColorPickerBox.pickerV = Math.max(0.0, Math.min(1.0, 1.0 - my / height));
+                                                        const hex = dockColorPickerBox.hsvToHex(dockColorPickerBox.pickerH, dockColorPickerBox.pickerS, dockColorPickerBox.pickerV);
+                                                        dockColorPickerBox.applyDockHex(hex, commit);
+                                                    }
+                                                    onPressed: mouse => pickSV(mouse.x, mouse.y, false)
+                                                    onPositionChanged: mouse => { if (pressed) pickSV(mouse.x, mouse.y, false); }
+                                                    onReleased: mouse => pickSV(mouse.x, mouse.y, true)
+                                                }
+                                            }
+
+                                            // Hue Slider
+                                            Rectangle {
+                                                id: hueBarRect
+                                                Layout.fillWidth: true
+                                                height: appRoot.sc(14)
+                                                radius: appRoot.sc(7)
+                                                border.width: 1
+                                                border.color: appRoot.colLineStrong
+                                                gradient: Gradient {
+                                                    orientation: Gradient.Horizontal
+                                                    GradientStop { position: 0.00; color: "#ff0000" }
+                                                    GradientStop { position: 0.17; color: "#ffff00" }
+                                                    GradientStop { position: 0.33; color: "#00ff00" }
+                                                    GradientStop { position: 0.50; color: "#00ffff" }
+                                                    GradientStop { position: 0.67; color: "#0000ff" }
+                                                    GradientStop { position: 0.83; color: "#ff00ff" }
+                                                    GradientStop { position: 1.00; color: "#ff0000" }
+                                                }
+
+                                                Rectangle {
+                                                    width: appRoot.sc(10)
+                                                    height: appRoot.sc(14)
+                                                    radius: appRoot.sc(5)
+                                                    x: Math.max(0, Math.min(hueBarRect.width - width, dockColorPickerBox.pickerH * hueBarRect.width - width / 2))
+                                                    color: "#ffffff"
+                                                    border.width: 1.5
+                                                    border.color: "#111316"
+                                                }
+
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    function pickHue(mx, commit) {
+                                                        dockColorPickerBox.pickerH = Math.max(0.0, Math.min(0.999, mx / width));
+                                                        const hex = dockColorPickerBox.hsvToHex(dockColorPickerBox.pickerH, dockColorPickerBox.pickerS, dockColorPickerBox.pickerV);
+                                                        dockColorPickerBox.applyDockHex(hex, commit);
+                                                    }
+                                                    onPressed: mouse => pickHue(mouse.x, false)
+                                                    onPositionChanged: mouse => { if (pressed) pickHue(mouse.x, false); }
+                                                    onReleased: mouse => pickHue(mouse.x, true)
+                                                }
+                                            }
+
+                                            // Quick Swatches (White, Black & Curated Colors)
+                                            GridLayout {
+                                                Layout.fillWidth: true
+                                                columns: 7
+                                                columnSpacing: 5
+                                                rowSpacing: 5
+
+                                                Repeater {
+                                                    model: [
+                                                        { id: "#ffffff", label: "White" },
+                                                        { id: "#f0f2f5", label: "Snow" },
+                                                        { id: "#000000", label: "Black" },
+                                                        { id: "#0b0d10", label: "Obsidian" },
+                                                        { id: "#141820", label: "Slate" },
+                                                        { id: "#101524", label: "Midnight" },
+                                                        { id: "#16162b", label: "Indigo" },
+                                                        { id: "#191221", label: "Plum" },
+                                                        { id: "#1c1014", label: "Crimson" },
+                                                        { id: "#1a1310", label: "Espresso" },
+                                                        { id: "#0e1713", label: "Forest" },
+                                                        { id: "#0d1b22", label: "Ocean" },
+                                                        { id: "#1c1c1e", label: "Charcoal" },
+                                                        { id: "#262930", label: "Ash" }
+                                                    ]
+                                                    delegate: Rectangle {
+                                                        id: dockSwatch
+                                                        required property var modelData
+                                                        readonly property bool sel: appRoot.effectiveDockHex.toLowerCase() === modelData.id
+                                                        Layout.fillWidth: true
+                                                        height: appRoot.sc(22)
+                                                        radius: appRoot.sc(6)
+                                                        color: dockSwatch.modelData.id
+                                                        border.width: sel ? 2 : 1
+                                                        border.color: sel ? appRoot.colAccent : appRoot.colLineStrong
+
+                                                        MouseArea {
+                                                            anchors.fill: parent
+                                                            hoverEnabled: true
+                                                            cursorShape: Qt.PointingHandCursor
+                                                            onClicked: {
+                                                                dockColorPickerBox.syncFromHex(dockSwatch.modelData.id);
+                                                                dockColorPickerBox.applyDockHex(dockSwatch.modelData.id, true);
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            // Auto-applying Hex Typer
+                                            Rectangle {
+                                                Layout.fillWidth: true
+                                                height: appRoot.sc(28)
+                                                radius: appRoot.sc(7)
+                                                color: appRoot.colSurface
+                                                border.width: 1
+                                                border.color: dockHexInput.activeFocus ? appRoot.colAccent : appRoot.colLineStrong
+
+                                                RowLayout {
+                                                    anchors.fill: parent
+                                                    anchors.leftMargin: appRoot.sc(8)
+                                                    anchors.rightMargin: appRoot.sc(8)
+                                                    spacing: 6
+
+                                                    Rectangle {
+                                                        width: appRoot.sc(12)
+                                                        height: appRoot.sc(12)
+                                                        radius: Math.round(width / 2)
+                                                        color: appRoot.rawDockBg
+                                                        border.width: 1
+                                                        border.color: appRoot.colLineStrong
+                                                    }
+
+                                                    TextInput {
+                                                        id: dockHexInput
+                                                        Layout.fillWidth: true
+                                                        color: appRoot.colFg
+                                                        font.family: appRoot.fontFamily
+                                                        font.pixelSize: appRoot.fs(-1)
+                                                        clip: true
+                                                        selectByMouse: true
+                                                        text: appRoot.dockColorCfg === "auto" ? "" : appRoot.dockColorCfg
+                                                        onTextEdited: {
+                                                            const raw = text.trim();
+                                                            if (raw.toLowerCase() === "auto") {
+                                                                appRoot.previewDockColor = "";
+                                                                appRoot.setHyprValue("dock_color", "auto");
+                                                            } else if (/^#?[0-9a-fA-F]{6}$/.test(raw)) {
+                                                                const norm = raw.startsWith("#") ? raw.toLowerCase() : ("#" + raw.toLowerCase());
+                                                                dockColorPickerBox.syncFromHex(norm);
+                                                                appRoot.previewDockColor = norm;
+                                                                appRoot.setHyprValue("dock_color", norm);
+                                                                appRoot.previewDockColor = "";
+                                                            }
+                                                        }
+
+                                                        Text {
+                                                            anchors.fill: parent
+                                                            verticalAlignment: Text.AlignVCenter
+                                                            text: "Type hex (#RRGGBB) or auto..."
+                                                            font.family: appRoot.fontFamily
+                                                            font.pixelSize: appRoot.fs(-1)
+                                                            color: appRoot.colMuted
+                                                            visible: !dockHexInput.text && !dockHexInput.activeFocus
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }

@@ -17,6 +17,28 @@ custom_dir = sys.argv[2]
 args = sys.argv[3:]
 
 STATIC_THEMES = {
+    "black": {
+        "col_bg": "#000000",
+        "col_surface": "#0c0c0e",
+        "col_surface_high": "#17171b",
+        "col_fg": "#f4f4f5",
+        "col_dim": "#a1a1aa",
+        "col_muted": "#63636e",
+        "col_accent": "#ffffff",
+        "col_accent_alt": "#a1a1aa",
+        "col_danger": "#f87171",
+    },
+    "white": {
+        "col_bg": "#f4f5f7",
+        "col_surface": "#e6e8ec",
+        "col_surface_high": "#d8dce2",
+        "col_fg": "#111318",
+        "col_dim": "#474d59",
+        "col_muted": "#7a8291",
+        "col_accent": "#2563eb",
+        "col_accent_alt": "#4f46e5",
+        "col_danger": "#dc2626",
+    },
     "mono": {
         "col_bg": "#101012",
         "col_surface": "#18181b",
@@ -72,9 +94,31 @@ STATIC_THEMES = {
         "col_accent_alt": "#b5838d",
         "col_danger": "#e06c75",
     },
+    "ocean": {
+        "col_bg": "#0b141a",
+        "col_surface": "#12202a",
+        "col_surface_high": "#1a2e3b",
+        "col_fg": "#e4f0f5",
+        "col_dim": "#9ab8c7",
+        "col_muted": "#5f7d8c",
+        "col_accent": "#56d4dd",
+        "col_accent_alt": "#38a3d1",
+        "col_danger": "#f07178",
+    },
+    "violet": {
+        "col_bg": "#120f1a",
+        "col_surface": "#1b1726",
+        "col_surface_high": "#272136",
+        "col_fg": "#eee9f7",
+        "col_dim": "#b4a8cc",
+        "col_muted": "#75698f",
+        "col_accent": "#c4a7f5",
+        "col_accent_alt": "#9b7ede",
+        "col_danger": "#f38ba8",
+    },
 }
 
-THEME_MODES = ("wallpaper", "mono", "espresso", "forest", "nord", "crimson")
+THEME_MODES = ("wallpaper", "black", "white", "mono", "espresso", "forest", "nord", "ocean", "violet", "crimson")
 MATUGEN_SCHEMES = (
     "scheme-tonal-spot",
     "scheme-vibrant",
@@ -118,6 +162,7 @@ DEFAULTS = {
     "left_dock_width": 330,
     "right_dock_width": 356,
     "frame_opacity": 96,
+    "dock_color": "auto",
     "border_line_width": 1,
     "border_glow": 42,
     "border_opacity": 16,
@@ -297,6 +342,8 @@ def load_state():
     data["left_dock_width"] = clamp_int(data.get("left_dock_width"), 280, 440, 330)
     data["right_dock_width"] = clamp_int(data.get("right_dock_width"), 300, 480, 356)
     data["frame_opacity"] = clamp_int(data.get("frame_opacity"), 65, 100, 96)
+    dc = str(data.get("dock_color", "auto")).strip().lower()
+    data["dock_color"] = "auto" if dc in ("", "auto") else valid_hex(dc, "auto")
     data["border_line_width"] = clamp_int(data.get("border_line_width"), 0, 4, 1)
     data["border_glow"] = clamp_int(data.get("border_glow"), 0, 100, 42)
     data["border_opacity"] = clamp_int(data.get("border_opacity"), 0, 100, 16)
@@ -441,6 +488,9 @@ if cmd == "--set":
         state = compute_palette(state)
     elif key == "font_family":
         state[key] = raw_val.strip() or "Adwaita Sans"
+    elif key == "dock_color":
+        dc = raw_val.strip().lower()
+        state[key] = "auto" if dc in ("", "auto") else valid_hex(dc, "auto")
     elif key in ("animations_enabled", "shadow_enabled", "dim_inactive"):
         state[key] = to_bool(raw_val)
     elif key in ("active_opacity", "inactive_opacity", "dim_strength"):
