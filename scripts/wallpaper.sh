@@ -192,7 +192,7 @@ set_wallpaper() {
 
         if command -v mpvpaper >/dev/null 2>&1; then
             mpvpaper -f -p -a max -l background \
-                -o "ao=null no-audio loop-file=inf hwdec=vaapi,auto-safe profile=fast gpu-dumb-mode=yes vd-lavc-fast=yes scale=bilinear cscale=bilinear dscale=bilinear deband=no interpolation=no framedrop=vo" \
+                -o "ao=null no-audio loop-file=inf load-scripts=no osc=no osd-bar=no hwdec=vaapi,auto-safe profile=fast gpu-dumb-mode=yes vd-lavc-fast=yes scale=bilinear cscale=bilinear dscale=bilinear deband=no interpolation=no framedrop=vo" \
                 '*' "$img_path" >/dev/null 2>&1
         else
             echo "mpvpaper is not installed" >&2
