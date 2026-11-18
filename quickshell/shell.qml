@@ -67,12 +67,12 @@ ShellRoot {
         return colAccent;
     }
 
-    // Dynamic wallpaper-extracted / curated editorial palette tokens
+    // Dynamic editorial & Linux rice palette tokens
     property string previewDockColor: ""
-    readonly property string dockColorCfg: String(hyprConfig.dock_color || "auto")
+    readonly property string dockColorCfg: String(hyprConfig.dock_color || "theme")
     readonly property string effectiveDockHex: previewDockColor !== "" ? previewDockColor : dockColorCfg
     readonly property color rawBg: hyprConfig.col_bg || "#111316"
-    readonly property color rawDockBg: (effectiveDockHex !== "auto" && /^#[0-9a-fA-F]{6}$/.test(effectiveDockHex)) ? effectiveDockHex : rawBg
+    readonly property color rawDockBg: (effectiveDockHex !== "theme" && effectiveDockHex !== "auto" && /^#[0-9a-fA-F]{6}$/.test(effectiveDockHex)) ? effectiveDockHex : rawBg
     property color colFrame: Qt.rgba(rawDockBg.r, rawDockBg.g, rawDockBg.b, frameOpacityFrac)
     property color colBg: Qt.rgba(rawBg.r, rawBg.g, rawBg.b, Math.min(1.0, frameOpacityFrac + 0.02))
     property color colSurface: hyprConfig.col_surface || "#1a1d21"
@@ -433,7 +433,7 @@ ShellRoot {
         anim_speed: 4.0,
         shadow_enabled: false,
         border_preset: "wallpaper",
-        theme_mode: "wallpaper",
+        theme_mode: "dark",
         matugen_scheme: "scheme-tonal-spot",
         font_family: "Adwaita Sans",
         font_size: 12,
@@ -445,7 +445,7 @@ ShellRoot {
         left_dock_width: 330,
         right_dock_width: 356,
         frame_opacity: 96,
-        dock_color: "auto",
+        dock_color: "theme",
         border_line_width: 1,
         border_glow: 42,
         border_opacity: 16,
@@ -4219,7 +4219,7 @@ ShellRoot {
                                         Text {
                                             id: hyprBadgeTxt
                                             anchors.centerIn: parent
-                                            text: (appRoot.hyprConfig.theme_mode || "wallpaper") === "wallpaper" ? "matugen" : (appRoot.hyprConfig.theme_mode || "theme")
+                                            text: appRoot.hyprConfig.theme_mode || "dark"
                                             font.family: appRoot.fontFamily
                                             font.pixelSize: appRoot.fs(-2)
                                             color: appRoot.colAccent
@@ -4328,29 +4328,6 @@ ShellRoot {
                                             Layout.fillWidth: true
                                             Text { text: "THEME & PALETTE"; font.family: appRoot.fontFamily; font.pixelSize: appRoot.fs(-1); font.bold: true; color: appRoot.colDim }
                                             Item { Layout.fillWidth: true }
-                                            Rectangle {
-                                                visible: (appRoot.hyprConfig.theme_mode || "wallpaper") === "wallpaper"
-                                                height: refreshPalTxt.implicitHeight + appRoot.sc(6)
-                                                width: refreshPalTxt.implicitWidth + appRoot.sc(12)
-                                                radius: appRoot.sc(6)
-                                                color: "transparent"
-                                                border.width: 0
-                                                Text {
-                                                    id: refreshPalTxt
-                                                    anchors.centerIn: parent
-                                                    text: "󰑓 Sync Wall"
-                                                    font.family: appRoot.fontFamily
-                                                    font.pixelSize: appRoot.fs(-2)
-                                                    color: refPalMouse.containsMouse ? appRoot.colFg : appRoot.colAccent
-                                                }
-                                                MouseArea {
-                                                    id: refPalMouse
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onClicked: appRoot.runHyprAction(["--refresh-palette"])
-                                                }
-                                            }
                                         }
 
                                         GridLayout {
@@ -4361,26 +4338,29 @@ ShellRoot {
 
                                             Repeater {
                                                 model: [
-                                                    { id: "wallpaper", label: "Wallpaper" },
+                                                    { id: "dark", label: "Dark" },
+                                                    { id: "light", label: "Light" },
                                                     { id: "black", label: "Black" },
-                                                    { id: "white", label: "White" },
-                                                    { id: "mono", label: "Mono" },
-                                                    { id: "espresso", label: "Espresso" },
-                                                    { id: "forest", label: "Forest" },
+                                                    { id: "catppuccin", label: "Catppuccin" },
+                                                    { id: "tokyonight", label: "Tokyo Night" },
+                                                    { id: "gruvbox", label: "Gruvbox" },
                                                     { id: "nord", label: "Nord" },
-                                                    { id: "ocean", label: "Ocean" },
-                                                    { id: "violet", label: "Violet" },
-                                                    { id: "crimson", label: "Crimson" }
+                                                    { id: "dracula", label: "Dracula" },
+                                                    { id: "rosepine", label: "Rosé Pine" },
+                                                    { id: "everforest", label: "Everforest" },
+                                                    { id: "kanagawa", label: "Kanagawa" },
+                                                    { id: "onedark", label: "One Dark" }
                                                 ]
                                                 delegate: Rectangle {
                                                     id: themeModeChip
                                                     required property var modelData
-                                                    readonly property bool sel: (appRoot.hyprConfig.theme_mode || "wallpaper") === modelData.id
+                                                    readonly property bool sel: (appRoot.hyprConfig.theme_mode || "dark") === modelData.id
                                                     Layout.fillWidth: true
                                                     height: appRoot.sc(26)
                                                     radius: appRoot.sc(7)
-                                                    color: "transparent"
-                                                    border.width: 0
+                                                    color: sel ? Qt.rgba(appRoot.colAccent.r, appRoot.colAccent.g, appRoot.colAccent.b, 0.14) : "transparent"
+                                                    border.width: sel ? 1 : 0
+                                                    border.color: appRoot.colAccent
                                                     Text {
                                                         anchors.centerIn: parent
                                                         text: themeModeChip.modelData.label
@@ -4395,49 +4375,6 @@ ShellRoot {
                                                         hoverEnabled: true
                                                         cursorShape: Qt.PointingHandCursor
                                                         onClicked: appRoot.setHyprValue("theme_mode", themeModeChip.modelData.id)
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        // Matugen Scheme Selector when Wallpaper Auto-Theme is active
-                                        Flow {
-                                            Layout.fillWidth: true
-                                            spacing: 5
-                                            visible: (appRoot.hyprConfig.theme_mode || "wallpaper") === "wallpaper"
-
-                                            Repeater {
-                                                model: [
-                                                    { id: "scheme-tonal-spot", label: "Tonal" },
-                                                    { id: "scheme-vibrant", label: "Vibrant" },
-                                                    { id: "scheme-expressive", label: "Expressive" },
-                                                    { id: "scheme-monochrome", label: "Monochrome" },
-                                                    { id: "scheme-fidelity", label: "Fidelity" }
-                                                ]
-                                                delegate: Rectangle {
-                                                    id: matChip
-                                                    required property var modelData
-                                                    readonly property bool sel: (appRoot.hyprConfig.matugen_scheme || "scheme-tonal-spot") === modelData.id
-                                                    width: matChipTxt.implicitWidth + appRoot.sc(14)
-                                                    height: appRoot.sc(22)
-                                                    radius: appRoot.sc(6)
-                                                    color: "transparent"
-                                                    border.width: 0
-                                                    Text {
-                                                        id: matChipTxt
-                                                        anchors.centerIn: parent
-                                                        text: matChip.modelData.label
-                                                        font.family: appRoot.fontFamily
-                                                        font.pixelSize: appRoot.fs(-2)
-                                                        font.bold: matChip.sel
-                                                        color: matChip.sel ? appRoot.colAccent : (matMouse.containsMouse ? appRoot.colFg : appRoot.colDim)
-                                                    }
-                                                    MouseArea {
-                                                        id: matMouse
-                                                        anchors.fill: parent
-                                                        hoverEnabled: true
-                                                        cursorShape: Qt.PointingHandCursor
-                                                        onClicked: appRoot.setHyprValue("matugen_scheme", matChip.modelData.id)
                                                     }
                                                 }
                                             }
@@ -4702,52 +4639,57 @@ ShellRoot {
                                                 Text { text: "DOCK COLOR"; font.family: appRoot.fontFamily; font.pixelSize: appRoot.fs(-1); font.bold: true; color: appRoot.colDim }
                                                 Item { Layout.fillWidth: true }
                                                 Text {
-                                                    text: appRoot.effectiveDockHex === "auto" ? "auto" : appRoot.effectiveDockHex.toUpperCase()
+                                                    text: (appRoot.effectiveDockHex === "theme" || appRoot.effectiveDockHex === "auto") ? "theme" : appRoot.effectiveDockHex.toUpperCase()
                                                     font.family: appRoot.fontFamily
                                                     font.pixelSize: appRoot.fs(-2)
                                                     color: appRoot.colAccent
                                                 }
                                             }
 
-                                            Rectangle {
-                                                readonly property bool sel: appRoot.effectiveDockHex === "auto"
+                                            RowLayout {
                                                 Layout.fillWidth: true
-                                                height: appRoot.sc(28)
-                                                radius: appRoot.sc(8)
-                                                color: sel ? Qt.rgba(appRoot.colAccent.r, appRoot.colAccent.g, appRoot.colAccent.b, 0.14) : appRoot.colSurface
-                                                border.width: sel ? 1 : 0
-                                                border.color: appRoot.colAccent
+                                                spacing: 5
 
-                                                Row {
-                                                    anchors.centerIn: parent
-                                                    spacing: 6
-                                                    Rectangle {
-                                                        anchors.verticalCenter: parent.verticalCenter
-                                                        width: appRoot.sc(10)
-                                                        height: appRoot.sc(10)
-                                                        radius: Math.round(width / 2)
-                                                        color: appRoot.rawBg
-                                                        border.width: 1
-                                                        border.color: appRoot.colLineStrong
-                                                    }
-                                                    Text {
-                                                        anchors.verticalCenter: parent.verticalCenter
-                                                        text: "Auto (Wallpaper / Theme)"
-                                                        font.family: appRoot.fontFamily
-                                                        font.pixelSize: appRoot.fs(-1)
-                                                        font.bold: parent.parent.sel
-                                                        color: parent.parent.sel ? appRoot.colAccent : (autoDockColMouse.containsMouse ? appRoot.colFg : appRoot.colDim)
-                                                    }
-                                                }
-                                                MouseArea {
-                                                    id: autoDockColMouse
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onClicked: {
-                                                        appRoot.previewDockColor = "";
-                                                        dockHexInput.text = "";
-                                                        appRoot.setHyprValue("dock_color", "auto");
+                                                Repeater {
+                                                    model: [
+                                                        { id: "theme", label: "Theme" },
+                                                        { id: "#111316", label: "Dark" },
+                                                        { id: "#f4f5f7", label: "Light" }
+                                                    ]
+                                                    delegate: Rectangle {
+                                                        id: dockQuickMode
+                                                        required property var modelData
+                                                        readonly property bool sel: appRoot.effectiveDockHex.toLowerCase() === modelData.id || (modelData.id === "theme" && appRoot.effectiveDockHex === "auto")
+                                                        Layout.fillWidth: true
+                                                        height: appRoot.sc(26)
+                                                        radius: appRoot.sc(7)
+                                                        color: sel ? Qt.rgba(appRoot.colAccent.r, appRoot.colAccent.g, appRoot.colAccent.b, 0.14) : appRoot.colSurface
+                                                        border.width: sel ? 1 : 0
+                                                        border.color: appRoot.colAccent
+                                                        Text {
+                                                            anchors.centerIn: parent
+                                                            text: dockQuickMode.modelData.label
+                                                            font.family: appRoot.fontFamily
+                                                            font.pixelSize: appRoot.fs(-1)
+                                                            font.bold: dockQuickMode.sel
+                                                            color: dockQuickMode.sel ? appRoot.colAccent : (dqmMouse.containsMouse ? appRoot.colFg : appRoot.colDim)
+                                                        }
+                                                        MouseArea {
+                                                            id: dqmMouse
+                                                            anchors.fill: parent
+                                                            hoverEnabled: true
+                                                            cursorShape: Qt.PointingHandCursor
+                                                            onClicked: {
+                                                                appRoot.previewDockColor = "";
+                                                                if (dockQuickMode.modelData.id === "theme") {
+                                                                    dockHexInput.text = "";
+                                                                    appRoot.setHyprValue("dock_color", "theme");
+                                                                } else {
+                                                                    dockColorPickerBox.syncFromHex(dockQuickMode.modelData.id);
+                                                                    dockColorPickerBox.applyDockHex(dockQuickMode.modelData.id, true);
+                                                                }
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
@@ -4929,12 +4871,12 @@ ShellRoot {
                                                         font.pixelSize: appRoot.fs(-1)
                                                         clip: true
                                                         selectByMouse: true
-                                                        text: appRoot.dockColorCfg === "auto" ? "" : appRoot.dockColorCfg
+                                                        text: (appRoot.dockColorCfg === "theme" || appRoot.dockColorCfg === "auto") ? "" : appRoot.dockColorCfg
                                                         onTextEdited: {
                                                             const raw = text.trim();
-                                                            if (raw.toLowerCase() === "auto") {
+                                                            if (raw.toLowerCase() === "theme" || raw.toLowerCase() === "auto") {
                                                                 appRoot.previewDockColor = "";
-                                                                appRoot.setHyprValue("dock_color", "auto");
+                                                                appRoot.setHyprValue("dock_color", "theme");
                                                             } else if (/^#?[0-9a-fA-F]{6}$/.test(raw)) {
                                                                 const norm = raw.startsWith("#") ? raw.toLowerCase() : ("#" + raw.toLowerCase());
                                                                 dockColorPickerBox.syncFromHex(norm);
@@ -4947,7 +4889,7 @@ ShellRoot {
                                                         Text {
                                                             anchors.fill: parent
                                                             verticalAlignment: Text.AlignVCenter
-                                                            text: "Type hex (#RRGGBB) or auto..."
+                                                            text: "Type hex (#RRGGBB) or theme..."
                                                             font.family: appRoot.fontFamily
                                                             font.pixelSize: appRoot.fs(-1)
                                                             color: appRoot.colMuted

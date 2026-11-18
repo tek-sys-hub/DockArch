@@ -17,6 +17,28 @@ custom_dir = sys.argv[2]
 args = sys.argv[3:]
 
 STATIC_THEMES = {
+    "dark": {
+        "col_bg": "#111316",
+        "col_surface": "#1a1d21",
+        "col_surface_high": "#25292e",
+        "col_fg": "#e6e8eb",
+        "col_dim": "#a8afb8",
+        "col_muted": "#6e7681",
+        "col_accent": "#89b4fa",
+        "col_accent_alt": "#b4befe",
+        "col_danger": "#f38ba8",
+    },
+    "light": {
+        "col_bg": "#f4f5f7",
+        "col_surface": "#e6e8ec",
+        "col_surface_high": "#d8dce2",
+        "col_fg": "#111318",
+        "col_dim": "#474d59",
+        "col_muted": "#7a8291",
+        "col_accent": "#2563eb",
+        "col_accent_alt": "#4f46e5",
+        "col_danger": "#dc2626",
+    },
     "black": {
         "col_bg": "#000000",
         "col_surface": "#0c0c0e",
@@ -28,97 +50,108 @@ STATIC_THEMES = {
         "col_accent_alt": "#a1a1aa",
         "col_danger": "#f87171",
     },
-    "white": {
-        "col_bg": "#f4f5f7",
-        "col_surface": "#e6e8ec",
-        "col_surface_high": "#d8dce2",
-        "col_fg": "#111318",
-        "col_dim": "#474d59",
-        "col_muted": "#7a8291",
-        "col_accent": "#2563eb",
-        "col_accent_alt": "#4f46e5",
-        "col_danger": "#dc2626",
+    "catppuccin": {
+        "col_bg": "#1e1e2e",
+        "col_surface": "#292a3c",
+        "col_surface_high": "#313244",
+        "col_fg": "#cdd6f4",
+        "col_dim": "#bac2de",
+        "col_muted": "#6c7086",
+        "col_accent": "#cba6f7",
+        "col_accent_alt": "#89b4fa",
+        "col_danger": "#f38ba8",
     },
-    "mono": {
-        "col_bg": "#101012",
-        "col_surface": "#18181b",
-        "col_surface_high": "#232328",
-        "col_fg": "#ededec",
-        "col_dim": "#a8a8a3",
-        "col_muted": "#6e6e6a",
-        "col_accent": "#e2e2df",
-        "col_accent_alt": "#9c9c96",
-        "col_danger": "#d96b6b",
+    "tokyonight": {
+        "col_bg": "#1a1b26",
+        "col_surface": "#24283b",
+        "col_surface_high": "#2f3549",
+        "col_fg": "#c0caf5",
+        "col_dim": "#a9b1d6",
+        "col_muted": "#565f89",
+        "col_accent": "#7aa2f7",
+        "col_accent_alt": "#bb9af7",
+        "col_danger": "#f7768e",
     },
-    "espresso": {
-        "col_bg": "#14100e",
-        "col_surface": "#1f1916",
-        "col_surface_high": "#2c2420",
-        "col_fg": "#eee6df",
-        "col_dim": "#bfb2a6",
-        "col_muted": "#7e7166",
-        "col_accent": "#ddb892",
-        "col_accent_alt": "#b08968",
-        "col_danger": "#d9776c",
-    },
-    "forest": {
-        "col_bg": "#0e1310",
-        "col_surface": "#161e19",
-        "col_surface_high": "#202b24",
-        "col_fg": "#e4ebe6",
-        "col_dim": "#a7b8ad",
-        "col_muted": "#6b7d72",
-        "col_accent": "#9cc5a1",
-        "col_accent_alt": "#73a580",
-        "col_danger": "#d97a7a",
+    "gruvbox": {
+        "col_bg": "#282828",
+        "col_surface": "#32302f",
+        "col_surface_high": "#3c3836",
+        "col_fg": "#ebdbb2",
+        "col_dim": "#d5c4a1",
+        "col_muted": "#928374",
+        "col_accent": "#fe8019",
+        "col_accent_alt": "#fabd2f",
+        "col_danger": "#fb4934",
     },
     "nord": {
-        "col_bg": "#161920",
-        "col_surface": "#1f242e",
-        "col_surface_high": "#2b3240",
+        "col_bg": "#2e3440",
+        "col_surface": "#3b4252",
+        "col_surface_high": "#434c5e",
         "col_fg": "#eceff4",
-        "col_dim": "#b8c2d1",
-        "col_muted": "#707c91",
+        "col_dim": "#d8dee9",
+        "col_muted": "#616e88",
         "col_accent": "#88c0d0",
         "col_accent_alt": "#81a1c1",
         "col_danger": "#bf616a",
     },
-    "crimson": {
-        "col_bg": "#130f11",
-        "col_surface": "#1d171a",
-        "col_surface_high": "#2a2126",
-        "col_fg": "#f0e7ea",
-        "col_dim": "#bfa9b1",
-        "col_muted": "#7d6870",
-        "col_accent": "#d9778b",
-        "col_accent_alt": "#b5838d",
+    "dracula": {
+        "col_bg": "#282a36",
+        "col_surface": "#343746",
+        "col_surface_high": "#44475a",
+        "col_fg": "#f8f8f2",
+        "col_dim": "#bdcfe6",
+        "col_muted": "#6272a4",
+        "col_accent": "#bd93f9",
+        "col_accent_alt": "#ff79c6",
+        "col_danger": "#ff5555",
+    },
+    "rosepine": {
+        "col_bg": "#191724",
+        "col_surface": "#1f1d2e",
+        "col_surface_high": "#26233a",
+        "col_fg": "#e0def4",
+        "col_dim": "#908caa",
+        "col_muted": "#6e6a86",
+        "col_accent": "#ebbcba",
+        "col_accent_alt": "#c4a7e7",
+        "col_danger": "#eb6f92",
+    },
+    "everforest": {
+        "col_bg": "#2d353b",
+        "col_surface": "#343f44",
+        "col_surface_high": "#3d484d",
+        "col_fg": "#d3c6aa",
+        "col_dim": "#9da9a0",
+        "col_muted": "#7a8478",
+        "col_accent": "#a7c080",
+        "col_accent_alt": "#83c092",
+        "col_danger": "#e67e80",
+    },
+    "kanagawa": {
+        "col_bg": "#1f1f28",
+        "col_surface": "#2a2a37",
+        "col_surface_high": "#363646",
+        "col_fg": "#dcd7ba",
+        "col_dim": "#c8c093",
+        "col_muted": "#727169",
+        "col_accent": "#7e9cd8",
+        "col_accent_alt": "#957fb8",
+        "col_danger": "#e46876",
+    },
+    "onedark": {
+        "col_bg": "#282c34",
+        "col_surface": "#2c313c",
+        "col_surface_high": "#353b45",
+        "col_fg": "#abb2bf",
+        "col_dim": "#828997",
+        "col_muted": "#5c6370",
+        "col_accent": "#61afef",
+        "col_accent_alt": "#c678dd",
         "col_danger": "#e06c75",
-    },
-    "ocean": {
-        "col_bg": "#0b141a",
-        "col_surface": "#12202a",
-        "col_surface_high": "#1a2e3b",
-        "col_fg": "#e4f0f5",
-        "col_dim": "#9ab8c7",
-        "col_muted": "#5f7d8c",
-        "col_accent": "#56d4dd",
-        "col_accent_alt": "#38a3d1",
-        "col_danger": "#f07178",
-    },
-    "violet": {
-        "col_bg": "#120f1a",
-        "col_surface": "#1b1726",
-        "col_surface_high": "#272136",
-        "col_fg": "#eee9f7",
-        "col_dim": "#b4a8cc",
-        "col_muted": "#75698f",
-        "col_accent": "#c4a7f5",
-        "col_accent_alt": "#9b7ede",
-        "col_danger": "#f38ba8",
     },
 }
 
-THEME_MODES = ("wallpaper", "black", "white", "mono", "espresso", "forest", "nord", "ocean", "violet", "crimson")
+THEME_MODES = ("dark", "light", "black", "catppuccin", "tokyonight", "gruvbox", "nord", "dracula", "rosepine", "everforest", "kanagawa", "onedark")
 MATUGEN_SCHEMES = (
     "scheme-tonal-spot",
     "scheme-vibrant",
@@ -150,7 +183,7 @@ DEFAULTS = {
     "anim_speed": 4.0,
     "shadow_enabled": False,
     "border_preset": "wallpaper",
-    "theme_mode": "wallpaper",
+    "theme_mode": "dark",
     "matugen_scheme": "scheme-tonal-spot",
     "font_family": "Adwaita Sans",
     "font_size": 12,
@@ -162,7 +195,7 @@ DEFAULTS = {
     "left_dock_width": 330,
     "right_dock_width": 356,
     "frame_opacity": 96,
-    "dock_color": "auto",
+    "dock_color": "theme",
     "border_line_width": 1,
     "border_glow": 42,
     "border_opacity": 16,
@@ -357,7 +390,7 @@ def load_state():
     if data.get("border_preset") not in BORDER_PRESETS:
         data["border_preset"] = "wallpaper"
     if data.get("theme_mode") not in THEME_MODES:
-        data["theme_mode"] = "wallpaper"
+        data["theme_mode"] = "dark"
     if data.get("matugen_scheme") not in MATUGEN_SCHEMES:
         data["matugen_scheme"] = "scheme-tonal-spot"
     font = str(data.get("font_family", "Adwaita Sans")).strip()
@@ -371,8 +404,8 @@ def load_state():
     data["left_dock_width"] = clamp_int(data.get("left_dock_width"), 280, 440, 330)
     data["right_dock_width"] = clamp_int(data.get("right_dock_width"), 300, 480, 356)
     data["frame_opacity"] = clamp_int(data.get("frame_opacity"), 65, 100, 96)
-    dc = str(data.get("dock_color", "auto")).strip().lower()
-    data["dock_color"] = "auto" if dc in ("", "auto") else valid_hex(dc, "auto")
+    dc = str(data.get("dock_color", "theme")).strip().lower()
+    data["dock_color"] = "theme" if dc in ("", "auto", "theme") else valid_hex(dc, "theme")
     data["border_line_width"] = clamp_int(data.get("border_line_width"), 0, 4, 1)
     data["border_glow"] = clamp_int(data.get("border_glow"), 0, 100, 42)
     data["border_opacity"] = clamp_int(data.get("border_opacity"), 0, 100, 16)
@@ -510,7 +543,7 @@ if cmd == "--set":
     if key == "border_preset":
         state[key] = raw_val if raw_val in BORDER_PRESETS else "wallpaper"
     elif key == "theme_mode":
-        state[key] = raw_val if raw_val in THEME_MODES else "wallpaper"
+        state[key] = raw_val if raw_val in THEME_MODES else "dark"
         state = compute_palette(state)
     elif key == "matugen_scheme":
         state[key] = raw_val if raw_val in MATUGEN_SCHEMES else "scheme-tonal-spot"
@@ -519,7 +552,7 @@ if cmd == "--set":
         state[key] = raw_val.strip() or "Adwaita Sans"
     elif key == "dock_color":
         dc = raw_val.strip().lower()
-        state[key] = "auto" if dc in ("", "auto") else valid_hex(dc, "auto")
+        state[key] = "theme" if dc in ("", "auto", "theme") else valid_hex(dc, "theme")
     elif key in ("animations_enabled", "shadow_enabled", "dim_inactive"):
         state[key] = to_bool(raw_val)
     elif key in ("active_opacity", "inactive_opacity", "dim_strength"):
